@@ -376,7 +376,7 @@
     if (parts.length <= 1) {
       // Split on sentence/clause boundaries used in generators
       parts = text
-        .split(/(?<=[.!;])\s+|(?<=→)\s+|(?<=;)\s+|\s+→\s+/)
+        .split(/\s*→\s*|(?<=[.!;:])\s+/)
         .map((s) => s.trim())
         .filter(Boolean);
     }
