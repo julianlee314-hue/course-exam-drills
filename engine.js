@@ -371,25 +371,32 @@
     if (!text && q.answer != null) text = 'Answer: ' + q.answer;
     if (!text) return ['No worked solution recorded for this item.'];
 
-    // Prefer explicit newlines
-    let parts = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
-    if (parts.length <= 1) {
-      // Split on sentence/clause boundaries used in generators
-      parts = text
-        .split(/\s*→\s*|(?<=[.!;:])\s+/)
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
-    // Keep short leftovers attached
-    const merged = [];
-    for (const p of parts) {
-      if (merged.length && p.length < 12 && !/[.!:]$/.test(merged[merged.length - 1])) {
-        merged[merged.length - 1] += ' ' + p;
-      } else {
-        merged.push(p);
+    let parts;
+    if (/\n/.test(text)) {
+      parts = text.split(/\n+/);
+    } else if (/→/.test(text)) {
+      // Keep label before first arrow with the first clause when it's a short tag like "Factor:"
+      parts = text.split(/\s*→\s*/);
+      if (parts.length >= 2 && /^[A-Za-z][A-Za-z\s]{0,20}:$/.test(parts[0].trim())) {
+        parts[1] = parts[0].trim() + ' ' + parts[1].trim();
+        parts.shift();
       }
+    } else {
+      parts = text.split(/(?<=\.)\s+(?=[A-Z(0-9])|(?<=;)\s+/);
     }
-    // Always end with explicit answer if not already last line
+    parts = parts.map((s) => s.trim()).filter(Boolean);
+
+    const merged = [];
+    for (let i = 0; i < parts.length; i++) {
+      let p = parts[i];
+      // Merge dangling short prefixes (e.g. "FOIL:") into the next chunk
+      if (p.length <= 24 && /:$/.test(p) && i + 1 < parts.length) {
+        parts[i + 1] = p + ' ' + parts[i + 1];
+        continue;
+      }
+      merged.push(p);
+    }
+
     const ans = q.answer != null ? String(q.answer).trim() : '';
     if (ans) {
       const last = (merged[merged.length - 1] || '').toLowerCase();
