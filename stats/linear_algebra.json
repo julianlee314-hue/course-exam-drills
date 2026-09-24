@@ -1,0 +1,63 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 260,
+    "2": 273,
+    "3": 271,
+    "4": 93,
+    "5": 49,
+    "6": 53,
+    "7": 25,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  },
+  "byDifficultyBand": {
+    "easy": 804,
+    "medium": 195,
+    "hard": 25
+  },
+  "bySection": {
+    "Determinants": 156,
+    "Matrices": 228,
+    "Vectors": 168,
+    "Systems": 168,
+    "Eigenvalues": 160,
+    "Vector spaces": 144
+  },
+  "bySubtopic": {
+    "det": 156,
+    "invertibility": 84,
+    "dot": 84,
+    "orthogonal": 84,
+    "RREF": 84,
+    "linear systems": 84,
+    "eigenvalues": 84,
+    "characteristic": 76,
+    "trace": 72,
+    "multiplication": 72,
+    "span": 72,
+    "theory": 72
+  },
+  "byType": {
+    "short": 712,
+    "mc": 72,
+    "tf": 240
+  },
+  "byTheme": {
+    "Harry Potter": 86,
+    "Star Wars": 86,
+    "Pixar / Disney": 86,
+    "Nintendo / Pokémon": 86,
+    "Marvel (kid-friendly)": 85,
+    "Lord of the Rings (light)": 85,
+    "Avatar: The Last Airbender": 85,
+    "Classic cartoons": 85,
+    "Disney classics": 85,
+    "LEGO / builders": 85,
+    "Kid sports adventure": 85,
+    "Friendly space adventures": 85
+  },
+  "avgDifficulty10": 2.67,
+  "medianDifficulty10": 2
+}

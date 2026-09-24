@@ -1,0 +1,72 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 225,
+    "2": 190,
+    "3": 154,
+    "4": 114,
+    "5": 155,
+    "6": 146,
+    "7": 40,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  },
+  "byDifficultyBand": {
+    "easy": 569,
+    "medium": 415,
+    "hard": 40
+  },
+  "bySection": {
+    "Limits": 159,
+    "Derivatives": 180,
+    "Applications of derivatives": 120,
+    "Integrals": 145,
+    "Applications of integrals": 96,
+    "Series": 90,
+    "Multivariable": 138,
+    "Vectors": 96
+  },
+  "bySubtopic": {
+    "limits": 111,
+    "power rule": 60,
+    "product rule": 60,
+    "chain rule": 60,
+    "tangent": 60,
+    "critical points": 60,
+    "antiderivative": 49,
+    "definite integral": 48,
+    "average value": 48,
+    "area": 48,
+    "volume": 48,
+    "geometric series": 42,
+    "convergence": 48,
+    "partial derivatives": 42,
+    "gradient": 48,
+    "double integral": 48,
+    "magnitude": 48,
+    "dot product": 48,
+    "theory": 48
+  },
+  "byType": {
+    "short": 928,
+    "mc": 0,
+    "tf": 96
+  },
+  "byTheme": {
+    "Harry Potter": 88,
+    "Star Wars": 87,
+    "Pixar / Disney": 87,
+    "Nintendo / Pokémon": 87,
+    "Marvel (kid-friendly)": 87,
+    "Lord of the Rings (light)": 87,
+    "Avatar: The Last Airbender": 87,
+    "Classic cartoons": 87,
+    "Disney classics": 87,
+    "LEGO / builders": 80,
+    "Kid sports adventure": 80,
+    "Friendly space adventures": 80
+  },
+  "avgDifficulty10": 3.37,
+  "medianDifficulty10": 3
+}

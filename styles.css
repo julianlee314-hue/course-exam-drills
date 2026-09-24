@@ -394,3 +394,23 @@ button, input, select, textarea { font: inherit; }
   font-weight: 600;
   margin-top: 0.25rem;
 }
+
+/* --- Bank stats + topic scoring --- */
+.bank-stats-panel .stats-compact { margin-top: 0.25rem; }
+.stats-subhead { margin: 0.75rem 0 0.35rem; font-weight: 600; font-size: 0.9rem; }
+.stat-bar-row, .topic-score-row { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem 0.75rem; align-items: center; margin: 0.35rem 0; }
+.stat-bar-row .stat-label, .topic-score-head { font-size: 0.9rem; }
+.stat-val { color: var(--muted); font-variant-numeric: tabular-nums; }
+.stat-bar { grid-column: 1 / -1; height: 0.45rem; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.stat-bar > i { display: block; height: 100%; background: var(--accent, #3b82f6); border-radius: 999px; }
+.topic-score-head { display: flex; justify-content: space-between; gap: 1rem; grid-column: 1 / -1; }
+.score-panel .score-big { font-size: 2.5rem; font-weight: 700; margin: 0.25rem 0; }
+.score-panel .score-pct { font-size: 1.25rem; color: var(--muted); margin-top: 0; }
+.subtopic-list { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.subtopic-list li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.25rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+.badge-d10 { background: #fef3c7; color: #92400e; font-variant-numeric: tabular-nums; }
+.stats-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.85rem; }
+.stats-table th, .stats-table td { border: 1px solid #e2e8f0; padding: 0.25rem 0.4rem; text-align: center; }
+.muted { color: var(--muted); }
+.stats-full { margin-top: 0.75rem; }
+.topic-scores { margin: 0.5rem 0 1rem; }

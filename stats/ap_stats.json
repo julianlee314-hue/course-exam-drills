@@ -1,0 +1,63 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 401,
+    "2": 203,
+    "3": 120,
+    "4": 78,
+    "5": 76,
+    "6": 108,
+    "7": 21,
+    "8": 17,
+    "9": 0,
+    "10": 0
+  },
+  "byDifficultyBand": {
+    "easy": 724,
+    "medium": 262,
+    "hard": 38
+  },
+  "bySection": {
+    "Descriptive": 468,
+    "Probability": 256,
+    "Sampling & distributions": 120,
+    "Inference": 180
+  },
+  "bySubtopic": {
+    "mean": 132,
+    "median": 72,
+    "range": 72,
+    "concepts": 132,
+    "basic probability": 72,
+    "complement": 64,
+    "independence": 60,
+    "binomial": 60,
+    "z-score": 60,
+    "proportion": 60,
+    "CI": 60,
+    "errors": 60,
+    "order stats": 60,
+    "IQR": 60
+  },
+  "byType": {
+    "short": 772,
+    "mc": 60,
+    "tf": 192
+  },
+  "byTheme": {
+    "Harry Potter": 86,
+    "Star Wars": 86,
+    "Pixar / Disney": 86,
+    "Nintendo / Pokémon": 86,
+    "Marvel (kid-friendly)": 85,
+    "Lord of the Rings (light)": 85,
+    "Avatar: The Last Airbender": 85,
+    "Classic cartoons": 85,
+    "Disney classics": 85,
+    "LEGO / builders": 85,
+    "Kid sports adventure": 85,
+    "Friendly space adventures": 85
+  },
+  "avgDifficulty10": 2.72,
+  "medianDifficulty10": 2
+}

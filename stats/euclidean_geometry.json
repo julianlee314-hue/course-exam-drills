@@ -1,0 +1,68 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 207,
+    "2": 150,
+    "3": 147,
+    "4": 158,
+    "5": 149,
+    "6": 213,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  },
+  "byDifficultyBand": {
+    "easy": 504,
+    "medium": 520,
+    "hard": 0
+  },
+  "bySection": {
+    "Book I — Triangles": 276,
+    "Foundations": 108,
+    "Book I — Lines & angles": 120,
+    "Book I — Parallels": 120,
+    "Book I — Constructions": 120,
+    "Book VI — Similarity": 60,
+    "Book I — Parallelograms": 120,
+    "Book III — Circles": 100
+  },
+  "bySubtopic": {
+    "I.32": 108,
+    "I.32 exterior": 60,
+    "I.47 Pythagoras": 60,
+    "postulates": 60,
+    "I.15": 60,
+    "I.13": 60,
+    "I.29": 120,
+    "I.1": 60,
+    "construction": 60,
+    "VI.2 / ratios": 60,
+    "I.34": 120,
+    "III.31": 52,
+    "III.20": 48,
+    "Elements structure": 48,
+    "I.20": 48
+  },
+  "byType": {
+    "short": 760,
+    "mc": 48,
+    "tf": 216
+  },
+  "byTheme": {
+    "Harry Potter": 86,
+    "Star Wars": 86,
+    "Pixar / Disney": 86,
+    "Nintendo / Pokémon": 86,
+    "Marvel (kid-friendly)": 85,
+    "Lord of the Rings (light)": 85,
+    "Avatar: The Last Airbender": 85,
+    "Classic cartoons": 85,
+    "Disney classics": 85,
+    "LEGO / builders": 85,
+    "Kid sports adventure": 85,
+    "Friendly space adventures": 85
+  },
+  "avgDifficulty10": 3.52,
+  "medianDifficulty10": 4
+}

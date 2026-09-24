@@ -1,0 +1,64 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 118,
+    "2": 132,
+    "3": 335,
+    "4": 67,
+    "5": 75,
+    "6": 66,
+    "7": 85,
+    "8": 59,
+    "9": 61,
+    "10": 26
+  },
+  "byDifficultyBand": {
+    "easy": 585,
+    "medium": 208,
+    "hard": 231
+  },
+  "bySection": {
+    "Definitions & theory": 123,
+    "Sequences": 456,
+    "Completeness": 204,
+    "Continuity": 121,
+    "Series": 120
+  },
+  "bySubtopic": {
+    "theory": 72,
+    "limits": 192,
+    "geometric": 72,
+    "epsilon": 72,
+    "supremum": 72,
+    "infimum": 72,
+    "nested intervals": 60,
+    "continuity": 61,
+    "IVT": 60,
+    "p-series": 60,
+    "series": 60,
+    "monotone": 60,
+    "Cauchy": 60,
+    "proof": 51
+  },
+  "byType": {
+    "short": 652,
+    "mc": 60,
+    "tf": 312
+  },
+  "byTheme": {
+    "Harry Potter": 89,
+    "Star Wars": 88,
+    "Pixar / Disney": 88,
+    "Nintendo / Pokémon": 88,
+    "Marvel (kid-friendly)": 88,
+    "Lord of the Rings (light)": 88,
+    "Avatar: The Last Airbender": 88,
+    "Classic cartoons": 88,
+    "Disney classics": 88,
+    "LEGO / builders": 77,
+    "Kid sports adventure": 77,
+    "Friendly space adventures": 77
+  },
+  "avgDifficulty10": 4.2,
+  "medianDifficulty10": 3
+}

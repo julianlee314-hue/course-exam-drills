@@ -1,0 +1,65 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 239,
+    "2": 201,
+    "3": 149,
+    "4": 144,
+    "5": 148,
+    "6": 143,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  },
+  "byDifficultyBand": {
+    "easy": 589,
+    "medium": 435,
+    "hard": 0
+  },
+  "bySection": {
+    "Algebra basics": 232,
+    "Equations": 144,
+    "Graphs": 144,
+    "Exponents & logs": 216,
+    "Trigonometry": 144,
+    "Functions": 144
+  },
+  "bySubtopic": {
+    "polynomials": 84,
+    "expand": 76,
+    "factoring": 72,
+    "linear": 72,
+    "quadratic": 72,
+    "slope": 72,
+    "linear functions": 72,
+    "exponents": 72,
+    "logs": 72,
+    "exact values": 72,
+    "trig ratios": 72,
+    "composition": 72,
+    "definitions": 72,
+    "exponent laws": 72
+  },
+  "byType": {
+    "short": 880,
+    "mc": 72,
+    "tf": 72
+  },
+  "byTheme": {
+    "Harry Potter": 86,
+    "Star Wars": 86,
+    "Pixar / Disney": 86,
+    "Nintendo / Pokémon": 86,
+    "Marvel (kid-friendly)": 85,
+    "Lord of the Rings (light)": 85,
+    "Avatar: The Last Airbender": 85,
+    "Classic cartoons": 85,
+    "Disney classics": 85,
+    "LEGO / builders": 85,
+    "Kid sports adventure": 85,
+    "Friendly space adventures": 85
+  },
+  "avgDifficulty10": 3.19,
+  "medianDifficulty10": 3
+}

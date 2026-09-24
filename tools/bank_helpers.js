@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { THEMES, flavorOf } = require('./themes');
 const math = require('./mathutil');
+const { enrichQuestion, computeBankStats } = require('./question_metadata');
+const { rewriteQuestion } = require('./rewrite_language');
 
 const OUT_DIR = path.join(__dirname, '..', 'banks');
 const TARGET = 1024;
@@ -75,7 +77,7 @@ function buildBank(courseId, factories, target) {
         };
         if (packed.solutionSteps.length) item.solutionSteps = packed.solutionSteps;
         if (type === 'mc' && q.options) item.options = q.options;
-        questions.push(item);
+        questions.push(enrichQuestion(rewriteQuestion(item)));
       }
     }
   }
@@ -84,11 +86,14 @@ function buildBank(courseId, factories, target) {
 
 function writeBank(courseId, questions) {
   if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
+  const enriched = questions.map((q) => enrichQuestion(rewriteQuestion(q)));
   const payload = {
     courseId,
-    count: questions.length,
+    count: enriched.length,
     generatedAt: new Date().toISOString(),
-    questions
+    enrichedAt: new Date().toISOString(),
+    stats: computeBankStats(enriched),
+    questions: enriched
   };
   const body =
     'window.QUESTION_BANKS = window.QUESTION_BANKS || {};\n' +

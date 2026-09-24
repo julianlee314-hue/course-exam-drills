@@ -242,6 +242,11 @@
     return b ? b.questions.length : 0;
   }
 
+  function bankStats(courseId) {
+    const b = getBank(courseId);
+    return b && b.stats ? b.stats : null;
+  }
+
   function cloneQuestion(q, index) {
     const out = Object.assign({}, q);
     out._index = index;
@@ -249,6 +254,9 @@
     if (Array.isArray(q.options)) out.options = q.options.slice();
     if (Array.isArray(q.solutionSteps)) out.solutionSteps = q.solutionSteps.slice();
     if (Array.isArray(q.tags)) out.tags = q.tags.slice();
+    if (Array.isArray(q.subtopics)) out.subtopics = q.subtopics.slice();
+    if (Array.isArray(q.topics)) out.topics = q.topics.slice();
+    if (q.meta && typeof q.meta === 'object') out.meta = Object.assign({}, q.meta);
     return out;
   }
 
@@ -411,18 +419,68 @@
   // ---------- Scoring ----------
   function scoreExam(exam, responses) {
     let correct = 0;
+    let pointsEarned = 0;
+    let pointsPossible = 0;
+    const byTopic = {};
+    const bySubtopic = {};
     const details = exam.questions.map((q, i) => {
       const user = responses[i] == null ? '' : responses[i];
       const ok = answersMatch(user, q.answer, { type: q.type, tol: q.tol });
-      if (ok) correct++;
-      return { index: i, ok, user, answer: q.answer };
+      const pts = Number.isFinite(q.points) ? q.points : 1;
+      pointsPossible += pts;
+      if (ok) {
+        correct++;
+        pointsEarned += pts;
+      }
+      const topic = q.section || 'General';
+      if (!byTopic[topic]) byTopic[topic] = { correct: 0, total: 0, percent: 0, questionIndexes: [] };
+      byTopic[topic].total++;
+      byTopic[topic].questionIndexes.push(i);
+      if (ok) byTopic[topic].correct++;
+
+      const subs = Array.isArray(q.subtopics) && q.subtopics.length
+        ? q.subtopics
+        : [(q.tags || []).find((t) => t && t !== 'bank') || topic];
+      subs.forEach((st) => {
+        const key = String(st);
+        if (!bySubtopic[key]) bySubtopic[key] = { correct: 0, total: 0, percent: 0 };
+        bySubtopic[key].total++;
+        if (ok) bySubtopic[key].correct++;
+      });
+
+      return {
+        index: i,
+        ok,
+        user,
+        answer: q.answer,
+        topic,
+        subtopics: subs.slice(),
+        difficulty10: q.difficulty10 != null ? q.difficulty10 : null
+      };
     });
+    Object.keys(byTopic).forEach((k) => {
+      const t = byTopic[k];
+      t.percent = t.total ? Math.round((1000 * t.correct) / t.total) / 10 : 0;
+    });
+    Object.keys(bySubtopic).forEach((k) => {
+      const t = bySubtopic[k];
+      t.percent = t.total ? Math.round((1000 * t.correct) / t.total) / 10 : 0;
+    });
+    const percent = exam.questions.length
+      ? Math.round((1000 * correct) / exam.questions.length) / 10
+      : 0;
+    const percentWeighted = pointsPossible
+      ? Math.round((1000 * pointsEarned) / pointsPossible) / 10
+      : 0;
     return {
       correct,
       total: exam.questions.length,
-      percent: exam.questions.length
-        ? Math.round((1000 * correct) / exam.questions.length) / 10
-        : 0,
+      percent,
+      pointsEarned,
+      pointsPossible,
+      percentWeighted,
+      byTopic,
+      bySubtopic,
       details
     };
   }
@@ -541,6 +599,7 @@
     assembleFromBank,
     getBank,
     bankSize,
+    bankStats,
     scoreExam,
     saveAttempt,
     getHistory,

@@ -1,0 +1,64 @@
+{
+  "total": 1024,
+  "byDifficulty10": {
+    "1": 256,
+    "2": 219,
+    "3": 166,
+    "4": 138,
+    "5": 133,
+    "6": 112,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  },
+  "byDifficultyBand": {
+    "easy": 641,
+    "medium": 383,
+    "hard": 0
+  },
+  "bySection": {
+    "Functions & graphs": 156,
+    "Exp & log": 252,
+    "Trigonometry": 252,
+    "Polynomials": 148,
+    "Sequences & series": 144,
+    "Analytic geometry": 72
+  },
+  "bySubtopic": {
+    "vertex": 84,
+    "logs": 84,
+    "log laws": 84,
+    "exponential equations": 84,
+    "radians": 84,
+    "sinusoids": 84,
+    "amplitude": 84,
+    "binomial": 76,
+    "zeros": 72,
+    "arithmetic": 72,
+    "geometric": 72,
+    "circle": 72,
+    "definitions": 72
+  },
+  "byType": {
+    "short": 868,
+    "mc": 84,
+    "tf": 72
+  },
+  "byTheme": {
+    "Harry Potter": 86,
+    "Star Wars": 86,
+    "Pixar / Disney": 86,
+    "Nintendo / Pokémon": 86,
+    "Marvel (kid-friendly)": 85,
+    "Lord of the Rings (light)": 85,
+    "Avatar: The Last Airbender": 85,
+    "Classic cartoons": 85,
+    "Disney classics": 85,
+    "LEGO / builders": 85,
+    "Kid sports adventure": 85,
+    "Friendly space adventures": 85
+  },
+  "avgDifficulty10": 3.01,
+  "medianDifficulty10": 3
+}

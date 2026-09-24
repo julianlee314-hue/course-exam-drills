@@ -229,6 +229,10 @@
         <h3>Blueprint</h3>
         <ul>${(course.sections || []).map((s) => `<li><strong>${esc(s.name)}</strong> <span style="color:var(--muted)">(weight ${s.weight})</span></li>`).join('')}</ul>
       </section>
+      <section class="panel bank-stats-panel" id="bank-stats">
+        <h3>Bank stats</h3>
+        <div id="bank-stats-body"></div>
+      </section>
       <section class="panel">
         <h3>Recent attempts</h3>
         ${hist.length ? `<ul class="history-list">${hist.map((h) => `
@@ -240,6 +244,42 @@
     `;
 
     document.getElementById('back').onclick = renderHome;
+    (function fillBankStats() {
+      const body = document.getElementById('bank-stats-body');
+      if (!body) return;
+      const st = E.bankStats && E.bankStats(id);
+      if (!st) {
+        body.innerHTML = '<p style="color:var(--muted)">Stats appear after banks are enriched.</p>';
+        return;
+      }
+      const types = st.byType || {};
+      const typeBits = ['short', 'mc', 'tf'].map((k) => types[k] ? (k + ' ' + types[k]) : null).filter(Boolean).join(' · ');
+      const secs = Object.entries(st.bySection || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const secRows = secs.map(([name, n]) =>
+        `<div class="stat-bar-row"><span class="stat-label">${esc(name)}</span><span class="stat-val">${n}</span><div class="stat-bar"><i style="width:${Math.round(100 * n / st.total)}%"></i></div></div>`
+      ).join('');
+      const d10 = st.byDifficulty10 || {};
+      const dCells = Array.from({ length: 10 }, (_, i) => `<td>${d10[i + 1] || 0}</td>`).join('');
+      const band = st.byDifficultyBand || {};
+      body.innerHTML = `
+        <div class="stats-compact">
+          <p><strong>Avg difficulty</strong> ${st.avgDifficulty10}/10 · median ${st.medianDifficulty10} · <strong>${st.total}</strong> questions</p>
+          <p class="muted">Types: ${esc(typeBits || '—')} · Bands: easy ${band.easy || 0}, medium ${band.medium || 0}, hard ${band.hard || 0}</p>
+          <p class="stats-subhead">Top sections</p>
+          ${secRows}
+        </div>
+        <details class="stats-full">
+          <summary>View full stats</summary>
+          <table class="stats-table"><thead><tr><th colspan="10">difficulty10 counts</th></tr>
+          <tr>${[1,2,3,4,5,6,7,8,9,10].map((n) => '<th>' + n + '</th>').join('')}</tr></thead>
+          <tbody><tr>${dCells}</tr></tbody></table>
+          <p class="stats-subhead">All sections</p>
+          <ul>${Object.entries(st.bySection || {}).sort((a, b) => b[1] - a[1]).map(([n, c]) => '<li>' + esc(n) + ': ' + c + '</li>').join('')}</ul>
+          <p class="stats-subhead">Top subtopics</p>
+          <ul>${Object.entries(st.bySubtopic || {}).sort((a, b) => b[1] - a[1]).slice(0, 20).map(([n, c]) => '<li>' + esc(n) + ': ' + c + '</li>').join('')}</ul>
+        </details>
+      `;
+    })();
     const presetEl = document.getElementById('preset');
     const nQ = document.getElementById('nQ');
     const mins = document.getElementById('mins');
@@ -518,6 +558,7 @@
       <div class="q-head">
         <span class="q-num">Q${q._index || (i + 1)}</span>
         <span class="badge badge-${diff}">${esc(diff)}</span>
+        <span class="badge badge-d10" title="Difficulty out of 10">${q.difficulty10 != null ? (q.difficulty10 + '/10') : ''}</span>
         <span class="badge badge-sec">${esc(q.section || '')}</span>
         ${(q.tags || []).slice(0, 3).map((t) => `<span class="badge badge-sec">${esc(t)}</span>`).join('')}
       </div>
@@ -739,11 +780,39 @@
     if (existing) existing.remove();
     const panel = document.createElement('section');
     panel.id = 'score-panel';
-    panel.className = 'panel';
+    panel.className = 'panel score-panel';
+
+    const topicEntries = Object.entries(s.byTopic || {}).sort((a, b) => a[0].localeCompare(b[0]));
+    const topicRows = topicEntries.map(([name, t]) => {
+      const pct = t.percent;
+      return `<div class="topic-score-row">
+        <div class="topic-score-head"><strong>${esc(name)}</strong>
+          <span>${t.correct}/${t.total} (${pct}%)</span></div>
+        <div class="stat-bar"><i style="width:${Math.min(100, pct)}%"></i></div>
+      </div>`;
+    }).join('');
+
+    const subEntries = Object.entries(s.bySubtopic || {}).sort((a, b) => b[1].total - a[1].total);
+    const subRows = subEntries.map(([name, t]) =>
+      `<li><span>${esc(name)}</span> <strong>${t.correct}/${t.total} (${t.percent}%)</strong></li>`
+    ).join('');
+
+    const weightedNote = (s.pointsPossible && s.pointsPossible !== s.total)
+      ? `<p class="muted">Weighted: ${s.pointsEarned}/${s.pointsPossible} (${s.percentWeighted}%)</p>`
+      : '';
+
     panel.innerHTML = `
       <h3>Score summary</h3>
       <p class="score-big">${s.correct} / ${s.total}</p>
-      <p>${s.percent}% · seed <span class="seed-chip">${esc(state.exam.seed)}</span></p>
+      <p class="score-pct">${s.percent}%</p>
+      ${weightedNote}
+      <p>Seed <span class="seed-chip">${esc(state.exam.seed)}</span></p>
+      <h4>Score by topic</h4>
+      <div class="topic-scores">${topicRows || '<p class="muted">No topic data.</p>'}</div>
+      <details class="subtopic-scores">
+        <summary>Score by subtopic</summary>
+        <ul class="subtopic-list">${subRows || '<li>None</li>'}</ul>
+      </details>
       <p class="no-print"><button type="button" class="btn" id="close-score">Close</button></p>
     `;
     app.insertBefore(panel, app.firstChild.nextSibling);
