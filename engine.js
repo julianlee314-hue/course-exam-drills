@@ -360,6 +360,50 @@
     return loadHistory()[courseId] || [];
   }
 
+
+  // ---------- Solution steps (line-by-line reveal) ----------
+  function solutionSteps(q) {
+    if (!q) return [];
+    if (Array.isArray(q.solutionSteps) && q.solutionSteps.length) {
+      return q.solutionSteps.map((s) => String(s).trim()).filter(Boolean);
+    }
+    let text = String(q.solution || '').trim();
+    if (!text && q.answer != null) text = 'Answer: ' + q.answer;
+    if (!text) return ['No worked solution recorded for this item.'];
+
+    // Prefer explicit newlines
+    let parts = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length <= 1) {
+      // Split on sentence/clause boundaries used in generators
+      parts = text
+        .split(/(?<=[.!;])\s+|(?<=→)\s+|(?<=;)\s+|\s+→\s+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    // Keep short leftovers attached
+    const merged = [];
+    for (const p of parts) {
+      if (merged.length && p.length < 12 && !/[.!:]$/.test(merged[merged.length - 1])) {
+        merged[merged.length - 1] += ' ' + p;
+      } else {
+        merged.push(p);
+      }
+    }
+    // Always end with explicit answer if not already last line
+    const ans = q.answer != null ? String(q.answer).trim() : '';
+    if (ans) {
+      const last = (merged[merged.length - 1] || '').toLowerCase();
+      if (!last.includes(ans.toLowerCase()) && !/^answer\b/i.test(last)) {
+        merged.push('Answer: ' + ans);
+      }
+    }
+    return merged.length ? merged : [text];
+  }
+
+  function formatSolutionText(q) {
+    return solutionSteps(q).join('\n');
+  }
+
   // ---------- Registry ----------
   const courses = {};
 
@@ -397,6 +441,8 @@
     registerCourse,
     getCourse,
     listCourses,
-    courses
+    courses,
+    solutionSteps,
+    formatSolutionText
   };
 })(typeof window !== 'undefined' ? window : globalThis);

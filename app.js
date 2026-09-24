@@ -17,7 +17,11 @@
     qIndex: 0,
     timer: { remaining: 0, running: false, handle: null, minutes: 0 },
     submitted: false,
-    lastScore: null
+    lastScore: null,
+    // Solution tab: face per question + how many lines revealed
+    face: {},          // qi -> 'problem' | 'solution'
+    reveal: {},        // qi -> number of solution lines shown
+    solutionBox: {}    // qi -> last copied text in the on-page box
   };
 
   function esc(s) { return E.escapeHtml(s); }
@@ -102,8 +106,13 @@
       <div class="howto">
         <details open>
           <summary>Drill vs Exam</summary>
-          <p><strong>Drill (default):</strong> check each question immediately, see the worked solution, jump to a new question on the same topic.</p>
+          <p><strong>Drill (default):</strong> check each question immediately, then open the <strong>Solution</strong> tab for a line-by-line walkthrough.</p>
           <p><strong>Exam:</strong> hide solutions until you Submit All. Optional timer auto-submits when it hits zero.</p>
+        </details>
+        <details open>
+          <summary>Solution tab</summary>
+          <p>Flip any card to <strong>Solution</strong>. Press <kbd>Enter</kbd> to reveal the next line of the worked solution.
+          <strong>Copy solution</strong> fills the solution box on the card and copies the full write-up to your clipboard.</p>
         </details>
         <details open>
           <summary>Seeds</summary>
@@ -250,6 +259,9 @@
     state.qIndex = 0;
     state.submitted = false;
     state.lastScore = null;
+    state.face = {};
+    state.reveal = {};
+    state.solutionBox = {};
     state.view = 'exam';
     if (opts.minutes > 0) startTimer(opts.minutes);
     else stopTimer();
@@ -375,6 +387,22 @@
     if (sub) sub.onclick = submitExam;
     const rev = document.getElementById('review-score');
     if (rev) rev.onclick = showScoreSummary;
+
+    // Global Enter → next solution line when Solution tab is active
+    if (!window._solEnterBound) {
+      window._solEnterBound = true;
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        if (state.view !== 'exam' || !state.exam) return;
+        const tag = (e.target && e.target.tagName || '').toLowerCase();
+        if (tag === 'textarea' || tag === 'input' || tag === 'select' || tag === 'button') return;
+        const i = state.layout === 'one' ? state.qIndex : null;
+        if (i == null) return;
+        if (getFace(i) !== 'solution') return;
+        e.preventDefault();
+        revealNext(i);
+      });
+    }
   }
 
   function persistCurrentInputs() {
@@ -394,9 +422,33 @@
     });
   }
 
+  function getFace(i) {
+    return state.face[i] || 'problem';
+  }
+
+  function getReveal(i) {
+    return state.reveal[i] || 0;
+  }
+
+  function copyText(t) {
+    t = String(t || '');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).catch(() => fallbackCopy(t));
+    } else {
+      fallbackCopy(t);
+    }
+  }
+
   function renderQuestionCard(q, i, showSolutions) {
     const current = state.layout === 'one' && i === state.qIndex ? ' current' : '';
     const diff = (q.difficulty || 'medium').toLowerCase();
+    const face = getFace(i);
+    const steps = E.solutionSteps(q);
+    const revealed = Math.min(getReveal(i), steps.length);
+    const canShowSolution = showSolutions && (state.mode === 'drill' ? state.checked[i] : state.submitted);
+    // Allow opening Solution tab once checked (drill) or after submit (exam); also allow peek in drill after check
+    const solutionUnlocked = canShowSolution || (state.mode === 'drill' && state.checked[i]) || state.submitted;
+
     let inputHtml = '';
     if (q.type === 'mc' && q.options) {
       inputHtml = `<div class="mc-options" data-qi="${i}">
@@ -419,19 +471,12 @@
       </div>`;
     }
 
-    let feedback = '';
-    if (showSolutions && state.checked[i]) {
+    let verdict = '';
+    if (state.checked[i] || state.submitted) {
       const ok = E.answersMatch(state.responses[i], q.answer, { type: q.type, tol: q.tol });
-      feedback = `<div class="feedback ${ok ? 'ok' : 'bad'}">
-        <strong>${ok ? 'Correct' : 'Not yet'}</strong>
+      verdict = `<div class="feedback ${ok ? 'ok' : 'bad'}">
+        <strong>${ok ? 'Correct' : (state.submitted ? 'Incorrect' : 'Not yet')}</strong>
         ${ok ? '' : ` — expected <code>${esc(String(q.answer))}</code>`}
-        <div class="solution">${esc(q.solution || '')}</div>
-      </div>`;
-    } else if (showSolutions && state.submitted) {
-      const ok = E.answersMatch(state.responses[i], q.answer, { type: q.type, tol: q.tol });
-      feedback = `<div class="feedback ${ok ? 'ok' : 'bad'}">
-        <strong>${ok ? 'Correct' : 'Incorrect'}</strong> — answer <code>${esc(String(q.answer))}</code>
-        <div class="solution">${esc(q.solution || '')}</div>
       </div>`;
     }
 
@@ -439,37 +484,132 @@
       ? `<button type="button" class="btn btn-primary check-btn" data-check="${i}">Check</button>`
       : '';
 
-    return `<article class="q-card${current}" id="q-${i}" data-section="${esc(q.section || '')}">
+    const boxVal = state.solutionBox[i] != null ? state.solutionBox[i] : '';
+    const stepHtml = steps.map((line, li) => {
+      const on = li < revealed;
+      return `<div class="sol-line ${on ? 'shown' : 'hidden-line'}" data-step="${li}">
+        <span class="sol-n">${li + 1}</span>
+        <span class="sol-text">${on ? esc(line) : '…'}</span>
+      </div>`;
+    }).join('');
+
+    const solHint = !solutionUnlocked
+      ? `<p class="sol-lock">Check your answer first (Drill) or submit the exam to unlock the Solution tab.</p>`
+      : (revealed < steps.length
+        ? `<p class="sol-hint">Press <kbd>Enter</kbd> for the next line (${revealed}/${steps.length}).</p>`
+        : `<p class="sol-hint">All ${steps.length} lines revealed.</p>`);
+
+    return `<article class="q-card${current} face-${face}" id="q-${i}" data-section="${esc(q.section || '')}" data-qi="${i}" tabindex="0">
       <div class="q-head">
         <span class="q-num">Q${q._index || (i + 1)}</span>
         <span class="badge badge-${diff}">${esc(diff)}</span>
         <span class="badge badge-sec">${esc(q.section || '')}</span>
         ${(q.tags || []).slice(0, 3).map((t) => `<span class="badge badge-sec">${esc(t)}</span>`).join('')}
       </div>
-      <div class="prompt">${esc(q.prompt)}</div>
-      ${inputHtml}
-      <div class="toolbar" style="margin:0.5rem 0 0">${checkBtn}</div>
-      ${feedback}
+      <div class="face-tabs no-print" role="tablist">
+        <button type="button" class="face-tab ${face === 'problem' ? 'active' : ''}" data-face="problem" data-qi="${i}">Problem</button>
+        <button type="button" class="face-tab ${face === 'solution' ? 'active' : ''}" data-face="solution" data-qi="${i}" ${solutionUnlocked ? '' : 'disabled title="Unlock by checking or submitting"'}>Solution</button>
+      </div>
+      <div class="face-panel face-problem ${face === 'problem' ? '' : 'hidden'}">
+        <div class="prompt">${esc(q.prompt)}</div>
+        ${inputHtml}
+        <div class="toolbar" style="margin:0.5rem 0 0">${checkBtn}</div>
+        ${verdict}
+      </div>
+      <div class="face-panel face-solution ${face === 'solution' ? '' : 'hidden'}">
+        <div class="sol-toolbar no-print">
+          <button type="button" class="btn btn-primary" data-reveal-next="${i}" ${!solutionUnlocked || revealed >= steps.length ? 'disabled' : ''}>Next line</button>
+          <button type="button" class="btn" data-reveal-all="${i}" ${!solutionUnlocked ? 'disabled' : ''}>Reveal all</button>
+          <button type="button" class="btn btn-good" data-copy-sol="${i}" ${!solutionUnlocked ? 'disabled' : ''}>Copy solution</button>
+          <button type="button" class="btn btn-ghost" data-reset-sol="${i}" ${!solutionUnlocked ? 'disabled' : ''}>Reset lines</button>
+        </div>
+        ${solHint}
+        <div class="sol-steps" data-steps-for="${i}">${stepHtml}</div>
+        <label class="sol-box-label" for="sol-box-${i}">Solution box</label>
+        <textarea class="sol-box" id="sol-box-${i}" data-sol-box="${i}" rows="5" placeholder="Copy solution fills this box (and your clipboard)…">${esc(boxVal)}</textarea>
+      </div>
     </article>`;
   }
 
   function wireQuestion(i) {
+    const card = app.querySelector(`#q-${i}`);
     const check = app.querySelector(`[data-check="${i}"]`);
     if (check) {
       check.onclick = () => {
         persistCurrentInputs();
         state.checked[i] = true;
+        // flip to solution after check so drilling continues into walkthrough
+        state.face[i] = 'solution';
+        if (!state.reveal[i]) state.reveal[i] = 0;
         renderExam();
+        focusSolutionCard(i);
       };
     }
+
+    app.querySelectorAll(`.face-tab[data-qi="${i}"]`).forEach((tab) => {
+      tab.onclick = () => {
+        if (tab.disabled) return;
+        state.face[i] = tab.getAttribute('data-face');
+        renderExam();
+        if (state.face[i] === 'solution') focusSolutionCard(i);
+      };
+    });
+
+    const nextBtn = app.querySelector(`[data-reveal-next="${i}"]`);
+    if (nextBtn) nextBtn.onclick = () => revealNext(i);
+
+    const allBtn = app.querySelector(`[data-reveal-all="${i}"]`);
+    if (allBtn) {
+      allBtn.onclick = () => {
+        const steps = E.solutionSteps(state.exam.questions[i]);
+        state.reveal[i] = steps.length;
+        renderExam();
+        focusSolutionCard(i);
+      };
+    }
+
+    const copyBtn = app.querySelector(`[data-copy-sol="${i}"]`);
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        const full = E.formatSolutionText(state.exam.questions[i]);
+        state.solutionBox[i] = full;
+        copyText(full);
+        renderExam();
+        focusSolutionCard(i);
+        const box = document.getElementById('sol-box-' + i);
+        if (box) {
+          box.focus();
+          box.select();
+        }
+        flashCopy(copyBtn);
+      };
+    }
+
+    const resetBtn = app.querySelector(`[data-reset-sol="${i}"]`);
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        state.reveal[i] = 0;
+        renderExam();
+        focusSolutionCard(i);
+      };
+    }
+
+    const box = app.querySelector(`[data-sol-box="${i}"]`);
+    if (box) {
+      box.addEventListener('input', () => { state.solutionBox[i] = box.value; });
+    }
+
     const input = app.querySelector(`[data-ans="${i}"]`);
     if (input) {
       input.addEventListener('change', () => { state.responses[i] = input.value; updateProgress(); });
       input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && state.mode === 'drill') {
+        if (e.key === 'Enter' && state.mode === 'drill' && getFace(i) === 'problem') {
+          e.preventDefault();
           persistCurrentInputs();
           state.checked[i] = true;
+          state.face[i] = 'solution';
           renderExam();
+          focusSolutionCard(i);
         }
       });
     }
@@ -482,6 +622,42 @@
         });
       });
     }
+
+    // Enter on solution face → next line (card-level listener once)
+    if (card && !card._solKeyWired) {
+      card._solKeyWired = true;
+      card.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        if (getFace(i) !== 'solution') return;
+        const tag = (e.target && e.target.tagName || '').toLowerCase();
+        if (tag === 'textarea' || tag === 'input') return;
+        e.preventDefault();
+        revealNext(i);
+      });
+    }
+  }
+
+  function revealNext(i) {
+    const steps = E.solutionSteps(state.exam.questions[i]);
+    const cur = getReveal(i);
+    if (cur >= steps.length) return;
+    state.reveal[i] = cur + 1;
+    renderExam();
+    focusSolutionCard(i);
+  }
+
+  function focusSolutionCard(i) {
+    const card = document.getElementById('q-' + i);
+    if (card) {
+      card.focus({ preventScroll: false });
+    }
+  }
+
+  function flashCopy(btn) {
+    if (!btn) return;
+    const prev = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = prev; }, 1200);
   }
 
   function updateProgress() {
@@ -509,7 +685,9 @@
     state.exam.questions[state.qIndex] = q;
     state.responses[state.qIndex] = '';
     state.checked[state.qIndex] = false;
-    // update seed note? keep original exam seed; this is a drill mutate
+    state.face[state.qIndex] = 'problem';
+    state.reveal[state.qIndex] = 0;
+    state.solutionBox[state.qIndex] = '';
     renderExam();
   }
 
