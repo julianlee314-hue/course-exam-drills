@@ -111,7 +111,7 @@ function factories() {
       make: (f,p,salt) => {
         const det=p.a*p.d; const mc=mcShuffle(det,[det+1,p.a+p.d,0],salt);
         return { section:'Determinants', difficulty:'easy', type:'mc', tags:['det'],
-          prompt:`det diag(${p.a},${p.d}) for ${stuff(f)} at ${where(f)}. ${who(f)} picks:`,
+          prompt:`${who(f)} computes det(diag(${p.a},${p.d})) for a ${stuff(f)} check at ${where(f)}. Choose the value.`,
           options:mc.options, answer:mc.answer, solutionSteps: steps(`Product of diag=${det}`) };
       }
     }
