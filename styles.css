@@ -388,3 +388,9 @@ button, input, select, textarea { font: inherit; }
   .wrap { padding: 0.85rem; }
   .hero { padding: 1.1rem; }
 }
+
+.bank-meta {
+  color: var(--accent, #3b82f6);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}

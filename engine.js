@@ -228,10 +228,107 @@
     return normalizeAnswer(u) === normalizeAnswer(c);
   }
 
+
+  // ---------- Question banks ----------
+  function getBank(courseId) {
+    const banks = global.QUESTION_BANKS || {};
+    const b = banks[courseId];
+    if (!b || !Array.isArray(b.questions) || !b.questions.length) return null;
+    return b;
+  }
+
+  function bankSize(courseId) {
+    const b = getBank(courseId);
+    return b ? b.questions.length : 0;
+  }
+
+  function cloneQuestion(q, index) {
+    const out = Object.assign({}, q);
+    out._index = index;
+    out.type = out.type || 'short';
+    if (Array.isArray(q.options)) out.options = q.options.slice();
+    if (Array.isArray(q.solutionSteps)) out.solutionSteps = q.solutionSteps.slice();
+    if (Array.isArray(q.tags)) out.tags = q.tags.slice();
+    return out;
+  }
+
+  function assembleFromBank(course, bank, rng, options) {
+    options = options || {};
+    const n = options.n || 25;
+    const pool = bank.questions.slice();
+    const byDiff = { easy: [], medium: [], hard: [] };
+    pool.forEach((q, i) => {
+      const d = q.difficulty || 'medium';
+      if (byDiff[d]) byDiff[d].push(i);
+      else byDiff.medium.push(i);
+    });
+    // shuffle index lists
+    byDiff.easy = rng.shuffle(byDiff.easy);
+    byDiff.medium = rng.shuffle(byDiff.medium);
+    byDiff.hard = rng.shuffle(byDiff.hard);
+
+    const nEasy = Math.max(1, Math.round(n * 0.35));
+    const nHard = Math.max(1, Math.round(n * 0.2));
+    const nMed = Math.max(0, n - nEasy - nHard);
+    const plan = rng.shuffle(
+      [].concat(
+        Array(nEasy).fill('easy'),
+        Array(nMed).fill('medium'),
+        Array(nHard).fill('hard')
+      )
+    );
+
+    const used = new Set();
+    const questions = [];
+    const ptr = { easy: 0, medium: 0, hard: 0 };
+
+    function take(diff) {
+      const list = byDiff[diff] || [];
+      while (ptr[diff] < list.length) {
+        const idx = list[ptr[diff]++];
+        if (used.has(idx)) continue;
+        used.add(idx);
+        return pool[idx];
+      }
+      return null;
+    }
+
+    for (let i = 0; i < plan.length; i++) {
+      let q = take(plan[i]);
+      if (!q) q = take('medium') || take('easy') || take('hard');
+      if (!q) break;
+      questions.push(cloneQuestion(q, questions.length + 1));
+    }
+
+    // Fill from full shuffle if needed
+    if (questions.length < n) {
+      const rest = rng.shuffle(pool.map((_, i) => i).filter((i) => !used.has(i)));
+      for (const idx of rest) {
+        if (questions.length >= n) break;
+        used.add(idx);
+        questions.push(cloneQuestion(pool[idx], questions.length + 1));
+      }
+    }
+
+    return {
+      courseId: course.id,
+      seed: rng.seed,
+      createdAt: new Date().toISOString(),
+      questions,
+      n: questions.length,
+      source: 'bank',
+      bankCount: pool.length
+    };
+  }
+
   // ---------- Exam assembly ----------
   function assembleExam(course, rng, options) {
     options = options || {};
     const n = options.n || 25;
+    const bank = getBank(course.id);
+    if (bank && !options.forceLive) {
+      return assembleFromBank(course, bank, rng, options);
+    }
     const gens = course.generators || [];
     if (!gens.length) throw new Error('No generators for course ' + course.id);
 
@@ -441,6 +538,9 @@
     normalizeAnswer,
     answersMatch,
     assembleExam,
+    assembleFromBank,
+    getBank,
+    bankSize,
     scoreExam,
     saveAttempt,
     getHistory,

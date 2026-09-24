@@ -26,6 +26,12 @@
 
   function esc(s) { return E.escapeHtml(s); }
 
+  function bankLabel(courseId) {
+    const n = (E.bankSize && E.bankSize(courseId)) || 0;
+    if (!n) return 'Bank: live generators only';
+    return 'Bank: ' + n.toLocaleString('en-US') + ' questions';
+  }
+
   function stopTimer() {
     if (state.timer.handle) {
       clearInterval(state.timer.handle);
@@ -75,7 +81,7 @@
     app.innerHTML = `
       <section class="hero">
         <h2>Pick a course exam</h2>
-        <p>Each module randomly generates a full exam from parameterized drills aligned to the curriculum core set.
+        <p>Each course draws from a <strong>mega question bank</strong> (1,000+ unique items) themed with kid-friendly pop culture — Harry Potter, Star Wars, Pixar/Disney, Nintendo/Pokémon, Marvel, LOTR, Avatar ATLA, classic cartoons — while keeping the math on-syllabus.
         Use <strong>Drill</strong> for instant feedback, or <strong>Exam</strong> for a timed paper.</p>
         <p>Share the on-screen <strong>seed</strong> to regenerate the same exam later.</p>
       </section>
@@ -86,6 +92,7 @@
             <h3>${esc(c.title)}</h3>
             <p class="sub">${esc(c.subtitle || '')}</p>
             <p class="tb">${esc(c.textbook || '')} · ${c.generators.length} generators</p>
+            <p class="tb bank-meta">${bankLabel(c.id)}</p>
           </button>
         `).join('')}
       </div>
@@ -128,6 +135,13 @@
           <p>Numeric and fraction answers are compared after simplification (e.g. 2/4 = 1/2).
           Last 20 attempts per course stay in this browser’s localStorage.</p>
         </details>
+        <details open>
+          <summary>Mega question banks &amp; themes</summary>
+          <p>Every course ships with a pre-generated bank of <strong>at least 1,000 unique questions</strong> (typically 1,024).
+          Exams draw primarily from the bank (seeded shuffle); live generators are only a fallback if a bank is missing.</p>
+          <p>Prompts are heavily flavored with <strong>funny, kid-friendly pop culture</strong> — Harry Potter, Star Wars, Pixar/Disney, Nintendo/Pokémon, Marvel (PG), Lord of the Rings (light), Avatar: The Last Airbender, classic cartoons, LEGO builders, and friendly space adventures — while answers stay mathematically exact.</p>
+          <p>Banks live in <code>banks/&lt;courseId&gt;.js</code> and are rebuilt with <code>node tools/generate_banks.js</code>.</p>
+        </details>
         <details>
           <summary>Courses</summary>
           <ol>
@@ -168,6 +182,7 @@
         <h2>${esc(course.title)}</h2>
         <p>${esc(course.description || course.subtitle || '')}</p>
         <p class="tb"><strong>Textbook:</strong> ${esc(course.textbook || '')}</p>
+        <p class="tb"><strong>${bankLabel(id)}</strong> · exams draw from the bank (seeded)</p>
       </section>
       <section class="panel">
         <h3>Start an exam</h3>
